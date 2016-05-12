@@ -25,8 +25,8 @@ class StatisticsPluginManager extends DefaultPluginManager {
   public function __construct(\Traversable $namespaces, CacheBackendInterface $cache_backend, ModuleHandlerInterface $module_handler) {
     parent::__construct('Plugin/StatisticsPlugin', $namespaces, $module_handler, 'Drupal\sapi\Plugin\StatisticsPluginInterface', 'Drupal\sapi\Annotation\StatisticsPlugin');
 
-    $this->alterInfo('sapi_StatisticsPlugin_info');
-    $this->setCacheBackend($cache_backend, 'sapi_StatisticsPlugin_plugins');
+    $this->alterInfo('sapi_statistics_plugins_info');
+    $this->setCacheBackend($cache_backend, 'sapi_statistics_plugins');
   }
 
 }
