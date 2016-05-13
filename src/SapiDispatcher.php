@@ -5,6 +5,8 @@ namespace Drupal\sapi;
 use Drupal\Core\Config\ConfigManager;
 use Drupal\Core\Session\AccountProxy;
 use Drupal\Core\Routing\CurrentRouteMatch;
+use Drupal\Component\Plugin\PluginManagerInterface;
+use Drupal\sapi\Plugin\StatisticsPluginInterface;
 
 /**
  * Class SapiDispatcher.
