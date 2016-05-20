@@ -16,21 +16,30 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 class StatisticsPluginListForm extends ConfigFormBase {
 
   /**
-   * The statistics plugin manager.
+   * The statistics action type plugin manager.
    *
-   * @var \Drupal\Component\Plugin\PluginManagerInterface $statisticsPluginManager
+   * @var \Drupal\Component\Plugin\PluginManagerInterface $sapi_action_type_manager
    */
-  protected $statisticsPluginManager;
+  protected $sapi_action_type_manager;
+
+  /**
+   * The statistics action handler plugin manager.
+   *
+   * @var \Drupal\Component\Plugin\PluginManagerInterface $sapi_action_handler_manager
+   */
+  protected $sapi_action_handler_manager;
 
   /**
    * Constructs a new StatisticsPluginListForm form.
    *
    * @param \Drupal\Core\Config\ConfigFactoryInterface $config_factory
-   * @param \Drupal\Component\Plugin\PluginManagerInterface $statistics_plugin_manager
+   * @param \Drupal\Component\Plugin\PluginManagerInterface $sapi_action_handler_manager
+   * @param \Drupal\Component\Plugin\PluginManagerInterface $sapi_action_type_manager
    */
-  public function __construct(ConfigFactoryInterface $config_factory, PluginManagerInterface $statistics_plugin_manager) {
+  public function __construct(ConfigFactoryInterface $config_factory,  PluginManagerInterface $sapi_action_type_manager, PluginManagerInterface $sapi_action_handler_manager) {
     parent::__construct($config_factory);
-    $this->statisticsPluginManager = $statistics_plugin_manager;
+    $this->sapi_action_type_manager = $sapi_action_type_manager;
+    $this->sapi_action_handler_manager = $sapi_action_handler_manager;
   }
 
   /**
@@ -39,7 +48,8 @@ class StatisticsPluginListForm extends ConfigFormBase {
   public static function create(ContainerInterface $container) {
     return new static(
       $container->get('config.factory'),
-      $container->get('plugin.manager.statisticsplugin')
+      $container->get('plugin.manager.sapi_action_type'),
+      $container->get('plugin.manager.sapi_action_handler')
     );
   }
 
@@ -48,7 +58,9 @@ class StatisticsPluginListForm extends ConfigFormBase {
    */
   protected function getEditableConfigNames() {
     return [
-      'sapi.statistics_plugins',
+      'sapi.entity_events',
+      'sapi.action_types',
+      'sapi.action_handlers',
     ];
   }
 
@@ -56,36 +68,75 @@ class StatisticsPluginListForm extends ConfigFormBase {
    * {@inheritdoc}
    */
   public function getFormId() {
-    return 'statistics_plugin_list_form';
+    return 'statistics_handler_list_form';
   }
 
   /**
    * {@inheritdoc}
    */
   public function buildForm(array $form, FormStateInterface $form_state) {
+
+    $form['entity_events'] = [
+      '#type' => 'fieldset',
+      '#title' => $this->t('Configure entity events') ,
+      '#description' => $this->t('Configure the settings for the event tracker.')
+    ];
+    $form['entity_events']['event_route_subscriber'] = [
+      '#type' => 'checkbox',
+      '#title' => $this->t('Enable the entity events subscriber'),
+      '#description' => $this->t('Check this to enable the event subscriber which will listen for entity routes, and trigger actions based on them.'),
+      '#default value' => $this->config('sapi.entity_events')->get('event_route_subscriber')
+    ];
+    
+    
     $form['plugins'] = [
       '#type' => 'fieldset',
       '#title' => $this->t('Statistics plugins'),
       '#description' => $this->t('Select the statistics plugins that you want to have enabled.'),
     ];
 
-    $form['plugins']['statistics_plugins'] = [
+    $form['plugins']['action_types'] = [
       '#type' => 'table',
       '#header' => [
-        $this->t('ID'),
+        'id' => $this->t('ID'),
+        'label' => $this->t('Label')
       ],
       '#empty' => $this->t('There are no plugins yet.'),
       '#tableselect' => TRUE,
-      '#default_value' => $this->config('sapi.statistics_plugins')->get('enabled'),
+      '#default_value' => $this->config('sapi.action_types')->get('enabled'),
     ];
-
     // Loop through the statistics plugins.
-    foreach ($this->statisticsPluginManager->getDefinitions() as $pluginDefinition) {
+    foreach ($this->sapi_action_type_manager->getDefinitions() as $pluginDefinition) {
       $id = $pluginDefinition['id'];
-      $form['plugins']['statistics_plugins'][$id]['id'] = array(
-        '#plain_text' => $id,
-      );
+      $label = $pluginDefinition['label'];
+
+      $form['plugins']['action_types'][$id] = [
+        'id' => ['#plain_text' => $id],
+        'label' => ['#plain_text' => $label]
+      ];
     }
+
+    $form['plugins']['action_handlers'] = [
+      '#type' => 'table',
+      '#header' => [
+        'id' => $this->t('ID'),
+        'label' => $this->t('Label')
+      ],
+      '#empty' => $this->t('There are no plugins yet.'),
+      '#tableselect' => TRUE,
+      '#default_value' => $this->config('sapi.action_handlers')->get('enabled'),
+    ];
+    // Loop through the statistics plugins.
+    foreach ($this->sapi_action_handler_manager->getDefinitions() as $pluginDefinition) {
+      $id = $pluginDefinition['id'];
+      $label = $pluginDefinition['label'];
+
+      $form['plugins']['action_handlers'][$id] = [
+        'id' => ['#plain_text' => $id],
+        'label' => ['#plain_text' => $label]
+      ];
+    }
+
 
     return parent::buildForm($form, $form_state);
   }
@@ -96,8 +147,16 @@ class StatisticsPluginListForm extends ConfigFormBase {
   public function submitForm(array &$form, FormStateInterface $form_state) {
     parent::submitForm($form, $form_state);
 
-    $this->config('sapi.statistics_plugins')
-      ->set('enabled', array_filter($form_state->getValue('statistics_plugins')))
+    $this->config('sapi.entity_events')
+      ->set('event_route_subscriber', array_filter($form_state->getValue('event_route_subscriber')))
+      ->save();
+
+    $this->config('sapi.action_types')
+      ->set('enabled', array_filter($form_state->getValue('action_types')))
+      ->save();
+
+    $this->config('sapi.action_handlers')
+      ->set('enabled', array_filter($form_state->getValue('action_handlers')))
       ->save();
   }
 

@@ -40,7 +40,7 @@ class Dispatcher implements DispatcherInterface {
    *
    * @var \Drupal\Component\Plugin\PluginManagerInterface
    */
-  protected $statisticsPluginManager;
+  protected $SAPIActionHandlerPluginManager;
 
   /**
    * Dispatcher constructor.
@@ -48,27 +48,24 @@ class Dispatcher implements DispatcherInterface {
    * @param \Drupal\Core\Config\ConfigManager $configManager
    * @param \Drupal\Core\Session\AccountProxy $currentUser
    * @param \Drupal\Core\Routing\CurrentRouteMatch $currentRouteMatch
-   * @param \Drupal\Component\Plugin\PluginManagerInterface $statisticsPluginManager
+   * @param \Drupal\Component\Plugin\PluginManagerInterface $SAPIActionHandlerPluginManager
    */
-  public function __construct(ConfigManager $configManager, AccountProxy $currentUser, CurrentRouteMatch $currentRouteMatch, PluginManagerInterface $statisticsPluginManager) {
+  public function __construct(ConfigManager $configManager, AccountProxy $currentUser, CurrentRouteMatch $currentRouteMatch, PluginManagerInterface $SAPIActionHandlerPluginManager) {
     $this->configManager = $configManager;
     $this->currentUser = $currentUser;
     $this->currentRouteMatch = $currentRouteMatch;
-    $this->statisticsPluginManager = $statisticsPluginManager;
+    $this->SAPIActionHandlerPluginManager = $SAPIActionHandlerPluginManager;
   }
 
-   /**
-    * Dispatches the statistics item to interested parties.
-    *
-    * @param \Drupal\sapi\StatisticsItemInterface $item
-    *
-    * @return void
+  /**
+   * {@inheritdoc}
    */
-  public function dispatch(StatisticsItemInterface $item) {
-    /** @var \Drupal\sapi\Plugin\StatisticsPluginInterface $instance */
-    foreach ($this->statisticsPluginManager->getDefinitions() as $pluginDefinition) {
-      $instance = $this->statisticsPluginManager->createInstance($pluginDefinition['id']);
-      $instance->process($item);
+  public function dispatch(ActionTypeInterface $action) {
+    /** @var \Drupal\sapi\ActionHandlerInterface $instance */
+    foreach ($this->SAPIActionHandlerPluginManager->getDefinitions() as $pluginDefinition) {
+      /** @var \Drupal\sapi\ActionHandlerInterface $instance */
+      $instance = $this->SAPIActionHandlerPluginManager->createInstance($pluginDefinition['id']);
+      $instance->process($action);
     }
   }
 
