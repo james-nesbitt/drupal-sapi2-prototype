@@ -1,18 +1,18 @@
 <?php
 
-namespace Drupal\sapi\Plugin;
+namespace Drupal\sapi;
 
 use Drupal\Core\Plugin\DefaultPluginManager;
 use Drupal\Core\Cache\CacheBackendInterface;
 use Drupal\Core\Extension\ModuleHandlerInterface;
 
 /**
- * Provides the Statistics plugin plugin manager.
+ * Provides the Statistics action handler plugin manager.
  */
-class StatisticsPluginManager extends DefaultPluginManager {
+class ActionHandlerManager extends DefaultPluginManager {
 
   /**
-   * Constructor for StatisticsPluginManager objects.
+   * Constructor for ActionHandlerManager objects.
    *
    * @param \Traversable $namespaces
    *   An object that implements \Traversable which contains the root paths
@@ -23,10 +23,10 @@ class StatisticsPluginManager extends DefaultPluginManager {
    *   The module handler to invoke the alter hook with.
    */
   public function __construct(\Traversable $namespaces, CacheBackendInterface $cache_backend, ModuleHandlerInterface $module_handler) {
-    parent::__construct('Plugin/StatisticsPlugin', $namespaces, $module_handler, 'Drupal\sapi\Plugin\StatisticsPluginInterface', 'Drupal\sapi\Annotation\StatisticsPlugin');
+    parent::__construct('Plugin/Statistics/ActionHandler', $namespaces, $module_handler, 'Drupal\sapi\ActionHandlerInterface', 'Drupal\sapi\Annotation\ActionHandler');
 
-    $this->alterInfo('sapi_statistics_plugins_info');
-    $this->setCacheBackend($cache_backend, 'sapi_statistics_plugins');
+    $this->alterInfo('sapi_sapi_action_handler_info');
+    $this->setCacheBackend($cache_backend, 'sapi_sapi_action_handler_plugins');
   }
 
 }

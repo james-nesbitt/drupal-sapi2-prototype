@@ -5,14 +5,14 @@ namespace Drupal\sapi\Annotation;
 use Drupal\Component\Annotation\Plugin;
 
 /**
- * Defines a Statistics plugin item annotation object.
+ * Defines a Statistics action type item annotation object.
  *
- * @see \Drupal\sapi\Plugin\StatisticsPluginManager
+ * @see \Drupal\sapi\Plugin\ActionTypeManager
  * @see plugin_api
  *
  * @Annotation
  */
-class StatisticsPlugin extends Plugin {
+class ActionType extends Plugin {
 
   /**
    * The plugin ID.
